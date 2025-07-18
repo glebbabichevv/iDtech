@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Recognize Face — FaceAttend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(120deg, #232526 0%, #1a202c 100%);
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-white">
+
+<div class="w-full max-w-lg mx-auto mt-16 p-8 rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900/90 to-gray-800/90">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-violet-400 bg-clip-text text-transparent">
+            Recognize Student
+        </h1>
+        <a href="{{ url_for('index') }}" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-cyan-700 transition">← Home</a>
+    </div>
+
+    <form id="recognize-form" class="flex flex-col gap-4">
+        <label class="text-lg font-medium text-gray-300 mb-2">Select Class</label>
+        <select id="class-select" name="class_name" class="mb-4 px-4 py-2 rounded bg-gray-800 text-white focus:ring-2 focus:ring-pink-400" required>
+            {% for class_name in classes %}
+                <option value="{{ class_name }}" {% if class_name == selected_class %}selected{% endif %}>{{ class_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label class="text-lg font-medium text-gray-300">Live Camera</label>
+        <video id="video" width="320" height="240" autoplay class="rounded-xl shadow mb-2"></video>
+        <canvas id="canvas" width="320" height="240" class="hidden"></canvas>
+
+        <button type="button" id="recognize-btn" class="mt-6 bg-green-700 hover:bg-green-600 px-8 py-3 rounded-xl font-bold text-lg transition">
+            Recognize
+        </button>
+    </form>
+
+    <div id="result" class="mt-6 text-center text-xl font-semibold"></div>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const recognizeBtn = document.getElementById('recognize-btn');
+    const form = document.getElementById('recognize-form');
+    const resultDiv = document.getElementById('result');
+
+    // Start camera
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({video: true}).then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+        });
+    }
+
+    // On button click: capture frame and recognize
+    recognizeBtn.onclick = async function(e) {
+        e.preventDefault();
+        const className = document.getElementById('class-select').value;
+        // Draw video frame to canvas
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataURL = canvas.toDataURL('image/jpeg');
+        resultDiv.textContent = 'Recognizing...';
+        const resp = await fetch("{{ url_for('recognize') }}", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({class_name: className, image: dataURL})
+        });
+        const data = await resp.json();
+        resultDiv.textContent = data.status;
+    };
+</script>
+
+</body>
+</html>

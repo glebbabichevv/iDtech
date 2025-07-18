@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student — FaceAttend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(120deg, #16161e 0%, #232526 100%);
+      }
+      #video {
+        border-radius: 1rem;
+        border: 2px solid #555;
+        box-shadow: 0 2px 24px 0 #0009;
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-white">
+
+<div class="w-full max-w-lg mx-auto mt-12 p-8 rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900/90 to-gray-800/90">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-pink-500 bg-clip-text text-transparent">Add Student</h1>
+        <a href="{{ url_for('index') }}" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-cyan-700 transition">← Home</a>
+    </div>
+
+    <form id="addStudentForm" autocomplete="off">
+        <div class="mb-4">
+            <label class="block mb-1 text-sm font-semibold" for="name">Student Name</label>
+            <input required id="name" name="name" type="text" placeholder="Enter student name"
+                   class="w-full px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"/>
+        </div>
+        <div class="mb-6">
+            <label class="block mb-1 text-sm font-semibold" for="class_name">Class</label>
+            <select required id="class_name" name="class_name"
+                    class="w-full px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+                {% for class_name in classes %}
+                    <option value="{{ class_name }}" {% if class_name == selected_class %}selected{% endif %}>{{ class_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-6">
+            <label class="block mb-2 text-sm font-semibold">Take a Photo</label>
+            <video id="video" autoplay class="w-full mb-2 h-56"></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <button type="button" id="captureBtn"
+                    class="px-6 py-2 bg-cyan-700 hover:bg-cyan-600 rounded-lg transition font-bold mb-2 w-full">Capture Photo</button>
+            <img id="photoPreview" src="" alt="" class="mx-auto my-2 rounded-lg shadow" style="display:none; max-height:120px;">
+        </div>
+        <div id="statusMsg" class="mb-4 text-center text-sm"></div>
+        <button type="submit"
+                class="w-full px-6 py-2 bg-pink-600 hover:bg-pink-500 rounded-lg font-bold text-white transition">Add Student</button>
+    </form>
+</div>
+
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const captureBtn = document.getElementById('captureBtn');
+const photoPreview = document.getElementById('photoPreview');
+const addStudentForm = document.getElementById('addStudentForm');
+const statusMsg = document.getElementById('statusMsg');
+let photoData = '';
+
+async function startVideo() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+    } catch (err) {
+        statusMsg.textContent = "Camera access denied. Cannot add student!";
+        captureBtn.disabled = true;
+    }
+}
+
+startVideo();
+
+captureBtn.onclick = function(e) {
+    e.preventDefault();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    photoData = canvas.toDataURL('image/jpeg');
+    photoPreview.src = photoData;
+    photoPreview.style.display = 'block';
+    statusMsg.textContent = "Photo captured! Now submit the form.";
+};
+
+addStudentForm.onsubmit = async function(e) {
+    e.preventDefault();
+    if (!photoData) {
+        statusMsg.textContent = "Please capture a photo first!";
+        return;
+    }
+    statusMsg.textContent = "Processing...";
+    const formData = {
+        name: document.getElementById('name').value.trim(),
+        class_name: document.getElementById('class_name').value,
+        image: photoData
+    };
+    const resp = await fetch("{{ url_for('add_student_route') }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(formData)
+    });
+    const data = await resp.json();
+    statusMsg.textContent = data.status;
+    if (data.status === 'Student added!') {
+        addStudentForm.reset();
+        photoData = '';
+        photoPreview.style.display = 'none';
+        setTimeout(() => statusMsg.textContent = '', 1500);
+    }
+};
+</script>
+
+</body>
+</html>

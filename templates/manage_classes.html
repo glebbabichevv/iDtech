@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Classes — FaceAttend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(120deg, #232526 0%, #1a202c 100%);
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-white">
+
+<div class="w-full max-w-lg mx-auto mt-14 p-8 rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900/90 to-gray-800/90">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-pink-500 to-cyan-400 bg-clip-text text-transparent">
+            Manage Classes
+        </h1>
+        <a href="{{ url_for('index') }}" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-cyan-700 transition">← Home</a>
+    </div>
+
+    {% if message %}
+      <div class="mb-6 px-4 py-2 bg-green-600/70 rounded shadow text-center text-white animate-pulse font-semibold">
+        {{ message }}
+      </div>
+    {% endif %}
+
+    <form method="post" class="flex gap-3 mb-8">
+        <input type="text" name="class_name" placeholder="New class name"
+               class="flex-1 px-4 py-2 rounded bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 transition" required>
+        <button type="submit" name="add" class="px-5 py-2 rounded-lg bg-pink-600 hover:bg-pink-500 font-bold transition">Add</button>
+    </form>
+
+    <h2 class="text-xl mb-3 font-semibold text-gray-300">Existing Classes</h2>
+    {% if classes %}
+      <ul class="space-y-3">
+        {% for class_name in classes %}
+          <li class="flex items-center bg-gray-800/70 rounded-lg px-4 py-2 shadow">
+              <span class="flex-1 font-medium text-lg">{{ class_name }}</span>
+              <form method="post" class="ml-4">
+                  <input type="hidden" name="remove_class" value="{{ class_name }}">
+                  <button type="submit" name="remove" class="px-3 py-1 bg-red-700 hover:bg-red-500 rounded transition font-semibold text-white">Remove</button>
+              </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="text-gray-400 mt-2">No classes found.</div>
+    {% endif %}
+</div>
+
+</body>
+</html>

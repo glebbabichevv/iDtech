@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FaceAttend Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(120deg, #1a1a2e 0%, #232526 100%);
+      }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-white">
+    <div class="w-full max-w-4xl mx-auto mt-10 p-8 rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900/90 to-gray-800/90">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-4xl font-extrabold bg-gradient-to-r from-yellow-400 via-pink-500 to-red-500 bg-clip-text text-transparent">FaceAttend</h1>
+            <div class="flex gap-3">
+                <a href="{{ url_for('add_student_route') }}" class="px-4 py-2 bg-cyan-700 rounded-lg hover:bg-cyan-600 font-bold transition">Add Student</a>
+                <a href="{{ url_for('students_db') }}" class="px-4 py-2 bg-blue-800 rounded-lg hover:bg-blue-700 font-bold transition">Students DB</a>
+                <a href="{{ url_for('attendance') }}" class="px-4 py-2 bg-green-700 rounded-lg hover:bg-green-600 font-bold transition">Attendance</a>
+                <a href="{{ url_for('recognize') }}" class="px-4 py-2 bg-violet-700 rounded-lg hover:bg-violet-600 font-bold transition">Recognize</a>
+                <a href="{{ url_for('manage_classes') }}" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 font-bold transition">Classes</a>
+            </div>
+        </div>
+        <hr class="mb-6 border-gray-700">
+        <div>
+            <h2 class="text-2xl font-bold mb-4">Students by Class</h2>
+            {% if students_by_class %}
+                {% for class_name, students in students_by_class.items() %}
+                    <div class="mb-5">
+                        <div class="text-xl font-semibold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">{{ class_name }}</div>
+                        <ul class="ml-4 mt-2 space-y-1">
+                            {% for s in students %}
+                                <li class="bg-gray-800/60 rounded-lg px-4 py-2">{{ s[1] }}</li>
+                            {% else %}
+                                <li class="text-gray-400">No students in this class yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-gray-400">No students or classes yet. Start by adding a class and a student!</div>
+            {% endif %}
+        </div>
+        <div class="flex gap-3 mt-8 justify-between">
+            <a href="{{ url_for('reset_db') }}" class="px-4 py-2 bg-red-700 rounded-lg hover:bg-red-600 transition">Reset DB</a>
+            <a href="{{ url_for('reset_photos') }}" class="px-4 py-2 bg-orange-700 rounded-lg hover:bg-orange-600 transition">Reset Photos</a>
+            <a href="{{ url_for('reset_csv_route') }}" class="px-4 py-2 bg-yellow-700 rounded-lg hover:bg-yellow-600 transition">Reset Attendance</a>
+        </div>
+    </div>
+</body>
+</html>

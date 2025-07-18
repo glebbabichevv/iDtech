@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Students Database — FaceAttend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { background: linear-gradient(120deg, #232526 0%, #1a202c 100%); }
+      .scrollbar-thin::-webkit-scrollbar { width: 8px; background: #232526; }
+      .scrollbar-thin::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 6px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-white">
+
+<div class="w-full max-w-4xl mx-auto mt-16 p-8 rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900/90 to-gray-800/90">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-pink-500 to-violet-400 bg-clip-text text-transparent">
+            Students Database
+        </h1>
+        <div class="flex gap-4">
+            <a href="{{ url_for('index') }}" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-cyan-700 transition">← Home</a>
+            <a href="{{ url_for('students_db_pdf', class=selected_class) }}" class="px-4 py-2 bg-pink-600 rounded-lg hover:bg-pink-500 font-bold transition">
+                Download PDF
+            </a>
+        </div>
+    </div>
+    <!-- Фильтр по классу -->
+    <form method="get" action="{{ url_for('students_db') }}" class="mb-8 flex gap-3 items-center">
+        <label class="text-gray-300 font-semibold">Class:</label>
+        <select name="class" class="bg-gray-900 border border-gray-700 px-4 py-2 rounded-lg text-white focus:outline-none" onchange="this.form.submit()">
+            <option value="All" {% if selected_class == 'All' %}selected{% endif %}>All</option>
+            {% for cls in classes %}
+                <option value="{{ cls }}" {% if selected_class == cls %}selected{% endif %}>{{ cls }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div class="overflow-x-auto rounded-lg shadow scrollbar-thin">
+        <table class="min-w-full text-center text-white border border-gray-700">
+            <thead class="bg-gray-800/80">
+                <tr>
+                    <th class="px-6 py-3 border-b border-gray-700">ID</th>
+                    <th class="px-6 py-3 border-b border-gray-700">Name</th>
+                    <th class="px-6 py-3 border-b border-gray-700">Class</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if students %}
+                {% for student in students %}
+                    <tr class="hover:bg-gray-700/60 transition">
+                        <td class="px-6 py-2 border-b border-gray-700">{{ student[0] }}</td>
+                        <td class="px-6 py-2 border-b border-gray-700">{{ student[1] }}</td>
+                        <td class="px-6 py-2 border-b border-gray-700">{{ student[2] }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="px-6 py-8 text-xl text-center text-gray-400">No students found.</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
