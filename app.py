@@ -24,26 +24,19 @@ def index():
         students_by_class.setdefault(class_name, []).append(student)
     return render_template('index.html', students_by_class=students_by_class, classes=classes)
 
-@app.route('/students')
-def students():
-    students = load_students()
-    classes = get_all_classes()
-    return render_template('students.html', students=students, classes=classes)
-
 @app.route('/students_db')
 def students_db():
-    selected_class = request.args.get('class', 'All')
-    classes = get_all_classes()
     students = load_students()
+    classes = get_all_classes()
+    selected_class = request.args.get('class', 'All')
     if selected_class != 'All':
         students = [s for s in students if s[2] == selected_class]
     return render_template('students_db.html', students=students, classes=classes, selected_class=selected_class)
 
-
 @app.route('/students_db/pdf')
 def students_db_pdf():
-    selected_class = request.args.get('class', 'All')
     students = load_students()
+    selected_class = request.args.get('class', 'All')
     if selected_class != 'All':
         students = [s for s in students if s[2] == selected_class]
     pdf = FPDF()
@@ -52,7 +45,8 @@ def students_db_pdf():
     title = f"Student Database: {selected_class}" if selected_class != 'All' else "Student Database: All"
     pdf.cell(0, 10, title, ln=True, align='C')
     pdf.ln(5)
-    col_width = pdf.w / 4
+    col_width = pdf.w / 4  # ID, Name, Class
+
     headers = ["ID", "Name", "Class"]
     for header in headers:
         pdf.cell(col_width, 10, header, border=1)
@@ -68,10 +62,7 @@ def students_db_pdf():
     pdf_bytes = pdf.output(dest='S').encode('latin-1')
     pdf_output = BytesIO(pdf_bytes)
     pdf_output.seek(0)
-    pdf_name = f"students_db_{selected_class}.pdf" if selected_class != 'All' else "students_db_all.pdf"
-    return send_file(pdf_output, as_attachment=True, download_name=pdf_name, mimetype='application/pdf')
-
-
+    return send_file(pdf_output, as_attachment=True, download_name='students_db.pdf', mimetype='application/pdf')
 
 @app.route('/add_student', methods=['GET', 'POST'])
 def add_student_route():
@@ -199,4 +190,5 @@ def attendance_pdf():
 
 if __name__ == '__main__':
     ensure_db()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
