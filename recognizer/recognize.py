@@ -9,14 +9,14 @@ from recognizer.face_utilits import mark_attendance
 def recognize_frame_by_class(frame, class_name):
     recognized = set()
 
-    # 1. Загрузка студентов из указанного класса
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM students WHERE class = ?", (class_name,))
     students_in_class = set(row[0] for row in cursor.fetchall())
     conn.close()
 
-    # 2. Загрузка снимков для этого класса
+
     known_faces = []
     for file in os.listdir(SNAPSHOT_DIR):
         name = os.path.splitext(file)[0]
@@ -27,7 +27,7 @@ def recognize_frame_by_class(frame, class_name):
     if not known_faces:
         return "No known faces found for this class."
 
-    # 3. Найдём лица на кадре
+
     face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
@@ -35,7 +35,7 @@ def recognize_frame_by_class(frame, class_name):
     if len(faces) == 0:
         return "No faces detected in the frame."
 
-    # 4. Сравнение каждого лица с базой
+
     for (x, y, w, h) in faces:
         face_img = frame[y:y+h, x:x+w]
         for name, known_path in known_faces:
